@@ -1,4 +1,4 @@
-// Copyright 2016 AUV-IITK
+// Copyright 2018 AUV-IITK
 #include <ros.h>
 #include <Arduino.h>
 #include <std_msgs/Int32.h>
@@ -31,14 +31,6 @@
 #define analogPinPressureSensor A0
 
 // MS5837 sensor;
-
-int upwardFront = 0;
-int upwardBack = 0;
-int sidewardBack = 0;
-int sidewardFront = 0;
-int forwardLeft = 0;
-int forwardRight = 0;
-
 
 // float last_pressure_sensor_value, pressure_sensor_value;
 std_msgs::Float64 voltage;
@@ -189,7 +181,6 @@ void PWMCbForwardRight(const std_msgs::Int32& msg)
 void PWMCbForwardLeft(const std_msgs::Int32& msg)
 {
   int pwm = msg.data;
-  forwardLeft++;
   if (pwm > 0)
   {
     thrusterEast(msg.data, true);
@@ -203,21 +194,6 @@ void PWMCbForwardLeft(const std_msgs::Int32& msg)
 void PWMCbSidewardFront(const std_msgs::Int32& msg)
 {
   int pwm = msg.data;
-  sidewardFront++;
-  if (pwm > 0)
-  {
-    thrusterSouthSway(pwm, true);
-  }
-  else
-  {
-    thrusterSouthSway(pwm, false);
-  }
-}
-
-void PWMCbSidewardBack(const std_msgs::Int32& msg)
-{
-  int pwm = msg.data;
-  sidewardBack++;
   if (pwm > 0)
   {
     thrusterNorthSway(pwm, true);
@@ -228,10 +204,22 @@ void PWMCbSidewardBack(const std_msgs::Int32& msg)
   }
 }
 
+void PWMCbSidewardBack(const std_msgs::Int32& msg)
+{
+  int pwm = msg.data;
+  if (pwm > 0)
+  {
+    thrusterSouthSway(pwm, true);
+  }
+  else
+  {
+    thrusterSouthSway(pwm, false);
+  }
+}
+
 void PWMCbUpwardFront(const std_msgs::Int32& msg)
 {
   int pwm = msg.data;
-  upwardFront++;
   if (pwm > 0)
   {
     thrusterNorthUp(pwm, true);
@@ -245,7 +233,6 @@ void PWMCbUpwardFront(const std_msgs::Int32& msg)
 void PWMCbUpwardBack(const std_msgs::Int32& msg)
 {
   int pwm = msg.data;
-  upwardBack++;
   if (pwm > 0)
   {
     thrusterSouthUp(pwm, true);
