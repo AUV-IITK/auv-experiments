@@ -45,7 +45,7 @@ void turningOutputPWMMapping(float output) // to keep PWM values within a limit
 
 void yawCb(std_msgs::Float64 msg)
 {
-    double loop_initial_time = ros::Time::now().toNSec();
+    double initial_loop_time = ros::Time::now().toNSec();
 
     // this is used to set the final angle after getting the value of first intial
     // position
@@ -98,7 +98,7 @@ void yawCb(std_msgs::Float64 msg)
 
         double final_loop_time = ros::Time::now().toNSec();
 
-        double total_loop_time = final_loop_rate - initial_loop_rate;
+        double total_loop_time = final_loop_time - initial_loop_time;
 
         std::cout << "Total loop time: " << total_loop_time << std::endl;
 

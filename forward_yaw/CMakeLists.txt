@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(auv-experiments)
+project(forward_yaw)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -121,6 +121,8 @@ include_directories(
 add_executable(forward_yaw src/forward_yaw.cpp)
 target_link_libraries(forward_yaw ${catkin_LIBRARIES})
 
+add_executable(forward_cmd src/forward_cmd.cpp)
+target_link_libraries(forward_cmd ${catkin_LIBRARIES})
 ## Declare a C++ library
 # add_library(motion_turn
 #   src/${PROJECT_NAME}/motion_turn.cpp

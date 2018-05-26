@@ -9,30 +9,34 @@ using std::string;
 
 int main(int argc, char **argv) {
 
-    ros::init(argc, argv, "forward_cmd");
-    ros::NodeHandle nh;
+	ros::init(argc, argv, "forward_cmd");
+	ros::NodeHandle nh;
 
-    if (argc != 2)
-    {
-        std::cout << "Invalid Input!!!!" << std::endl;
-        return -1;
-    }
-    ros::Publisher rightThrusterPWMPub = nh.advertise<std_msgs::Int32>("/forward/pwm/right", 1000);
-    ros::Publisher leftThrusterPWMPub = nh.advertise<std_msgs::Int32>("/forward/pwm/left", 1000);
+	// std::cout << "srgc" << argc << std::endl;
 
-    ros::Rate loop_rate(100);
+	if (argc != 3)
+	{
+		std::cout << "Invalid Input!!!!" << std::endl;
+		return -1;
+	}
+	ros::Publisher rightThrusterPWMPub = nh.advertise<std_msgs::Int32>("/pwm/forwardLeft", 1000);
+	ros::Publisher leftThrusterPWMPub = nh.advertise<std_msgs::Int32>("/pwm/forwardRight", 1000);
 
-    std_msgs::Int32 rightThrusterPWM.data = std::atoi(argv[1]);
-    std_msgs::Int32 leftThrusterPWM.data = std::atoi(argv[2]);
+	ros::Rate loop_rate(100);
 
-    while(ros::ok()) {
-        
-        rightThrusterPWMPub.publish(rightThrusterPWM);
-        leftThrusterPWMPub.publish(leftThrusterPWM);
+	std_msgs::Int32 rightThrusterPWM;
+	rightThrusterPWM.data = std::atoi(argv[1]);
+	std_msgs::Int32 leftThrusterPWM;
+	leftThrusterPWM.data = std::atoi(argv[2]);
 
-        loop_rate.sleep();
-        ros::spinOnce();
-    }
+	while(ros::ok()) {
 
-    return 0;
+		rightThrusterPWMPub.publish(rightThrusterPWM);
+		leftThrusterPWMPub.publish(leftThrusterPWM);
+
+		loop_rate.sleep();
+		ros::spinOnce();
+	}
+
+	return 0;
 }
