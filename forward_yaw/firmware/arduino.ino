@@ -1,4 +1,4 @@
-// Copyright 2018 AUV-IITK
+// Copyright 2016 AUV-IITK
 #include <ros.h>
 #include <Arduino.h>
 #include <std_msgs/Int32.h>
@@ -14,12 +14,12 @@
 #define directionPinWest1 32
 #define directionPinWest2 33
 
-#define pwmPinNorthSway 7
-#define pwmPinSouthSway 6
-#define directionPinSouthSway1 24
-#define directionPinSouthSway2 25
-#define directionPinNorthSway1 22
-#define directionPinNorthSway2 23
+#define pwmPinNorthSway 6
+#define pwmPinSouthSway 7
+#define directionPinSouthSway1 23
+#define directionPinSouthSway2 22
+#define directionPinNorthSway1 24
+#define directionPinNorthSway2 25
 
 #define pwmPinNorthUp 5
 #define pwmPinSouthUp 4
@@ -33,7 +33,7 @@
 // MS5837 sensor;
 
 // float last_pressure_sensor_value, pressure_sensor_value;
-std_msgs::Float64 voltage;
+// std_msgs::Float64 voltage;
 ros::NodeHandle nh;
 
 void thrusterNorthUp(int pwm, int isUpward)
@@ -58,35 +58,20 @@ void thrusterSouthUp(int pwm, int isUpward)
   analogWrite(pwmPinSouthUp, 255 - pwm);
   if (isUpward)
   {
-    digitalWrite(directionPinSouthUp1, HIGH);
-    digitalWrite(directionPinSouthUp2, LOW);
+    digitalWrite(directionPinSouthUp1, LOW);
+    digitalWrite(directionPinSouthUp2, HIGH);
   }
   else
   {
-    digitalWrite(directionPinSouthUp1, LOW);
-    digitalWrite(directionPinSouthUp2, HIGH);
+    digitalWrite(directionPinSouthUp1, HIGH);
+    digitalWrite(directionPinSouthUp2, LOW);
   }
 }
 
 void thrusterNorthSway(int pwm, int isRight)
 {
-  pwm = abs(pwm);
-  if(pwm >= 220)
-  {
-    pwm = 250;
-  }
-  else if(pwm < 220 && pwm >= 145)
-  {
-    pwm = 157;
-  }
-  else if(pwm < 145 && pwm > 0)
-  {
-    pwm = 109;
-  }
-  else
-  {
-    pwm = 0;
-  }
+  pwm = constrain(pwm, -200, 200);
+  if(pwm != 0) pwm = map(abs(pwm), 1, 200, 50, 200);
   analogWrite(pwmPinNorthSway, 255 - pwm);
   if (isRight)
   {
@@ -102,23 +87,8 @@ void thrusterNorthSway(int pwm, int isRight)
 
 void thrusterSouthSway(int pwm, int isRight)
 {
-  pwm = abs(pwm);
-  if(pwm >= 220)
-  {
-    pwm = 254;
-  }
-  else if(pwm < 220 && pwm >= 145)
-  {
-    pwm = 200;
-  }
-  else if(pwm < 145 && pwm > 0)
-  {
-    pwm = 138;
-  }
-  else
-  {
-    pwm = 0;
-  }
+  pwm = constrain(pwm, -200, 200);
+  if(pwm != 0) pwm = map(abs(pwm), 1, 200, 50, 200);
   analogWrite(pwmPinSouthSway, 255 - pwm);
   if (isRight)
   {
@@ -134,7 +104,8 @@ void thrusterSouthSway(int pwm, int isRight)
 
 void thrusterEast(int pwm, int isForward)
 {
-  pwm = abs(pwm);
+  pwm = constrain(pwm, -200, 200);
+  if(pwm != 0) pwm = map(abs(pwm), 1, 200, 35, 200);
   analogWrite(pwmPinEast, 255 - pwm);
   if (isForward)
   {
@@ -150,7 +121,8 @@ void thrusterEast(int pwm, int isForward)
 
 void thrusterWest(int pwm, int isForward)
 {
-  pwm = abs(pwm);
+  pwm = constrain(pwm, -200, 200);
+  if(pwm != 0) pwm = map(abs(pwm), 1, 200, 24, 200);
   analogWrite(pwmPinWest, 255 - pwm);
   if (isForward)
   {
@@ -167,7 +139,6 @@ void thrusterWest(int pwm, int isForward)
 void PWMCbForwardRight(const std_msgs::Int32& msg)
 {
   int pwm = msg.data;
-  forwardRight++;
   if (pwm > 0)
   {
     thrusterWest(msg.data, true);
@@ -258,15 +229,16 @@ void PWMCbTurn(const std_msgs::Int32& msg)
   // }
   // else
   // {
-    if (msg.data > 0)
+  int pwm = msg.data;
+    if (pwm > 0)
     {
-      thrusterNorthSway(msg.data, false);
-      thrusterSouthSway(msg.data, true);
+      thrusterNorthSway(pwm, true);
+      thrusterSouthSway(pwm, false);
     }
     else
     {
-      thrusterNorthSway(msg.data, true);
-      thrusterSouthSway(msg.data, false);
+      thrusterNorthSway(pwm, false);
+      thrusterSouthSway(pwm, true);
     }
 }
 
@@ -346,6 +318,8 @@ void loop()
   //   ps_voltage.publish(&voltage);
   //   last_pressure_sensor_value = pressure_sensor_value;
   // }
+
+
 
   delay(200);
   nh.spinOnce();

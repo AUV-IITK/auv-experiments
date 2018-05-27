@@ -20,8 +20,8 @@ ros::Publisher PWM_turn;
 
 // ros::Publisher
 float p = 2.4;
-float i = 0.5;
-float d = 0.35;
+float i = 0.0;
+float d = 0.5;
 float band = 1.0;
 
 double previoustime, presenttime;

@@ -111,9 +111,9 @@ int main(int argc, char *argv[])
 
   image_transport::ImageTransport it(n);
   image_transport::Subscriber sub1 = it.subscribe("/varun/sensors/front_camera/image_raw", 1, imageCallback);
-  image_transport::Publisher pub1 = it.advertise("/first_picture", 1);
-  image_transport::Publisher pub2 = it.advertise("/second_picture", 1);
-  image_transport::Publisher pub3 = it.advertise("/third_picture", 1);
+  image_transport::Publisher pub1 = it.advertise("/first_picture/buoy", 1);
+  image_transport::Publisher pub2 = it.advertise("/second_picture/buoy", 1);
+  image_transport::Publisher pub3 = it.advertise("/third_picture/buoy", 1);
 
   dynamic_reconfigure::Server<vision_buoy::buoyConfig> server;
   dynamic_reconfigure::Server<vision_buoy::buoyConfig>::CallbackType f;
@@ -136,6 +136,7 @@ int main(int argc, char *argv[])
 
   while (ros::ok())
   {
+    double intial_loop_time = ros::Time::now().toSec();
     std_msgs::Float64MultiArray array;
     loop_rate.sleep();
 
@@ -189,8 +190,14 @@ int main(int argc, char *argv[])
     cv::dilate(thresholded, thresholded, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5)));
     cv::dilate(thresholded, thresholded, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(3, 3)));
 
-    cv::imshow("BuoyDetection:AfterEnhancing", balanced_image1);
-    cv::imshow("BuoyDetection:AfterThresholding", thresholded);
+    // cv::imshow("BuoyDetection:AfterEnhancing", balanced_image1);
+    sensor_msgs::ImagePtr msg2 = cv_bridge::CvImage(std_msgs::Header(), "bgr8", balanced_image1).toImageMsg();
+    pub2.publish(msg2);
+    // cv::imshow("BuoyDetection:AfterThresholding", thresholded);
+
+    sensor_msgs::ImagePtr msg3 = cv_bridge::CvImage(std_msgs::Header(), "mono8", thresholded).toImageMsg();
+    pub3.publish(msg3);
+
 
     if (1)
     {
@@ -200,40 +207,45 @@ int main(int argc, char *argv[])
       findContours(thresholded_Mat, contours, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE);  // Find the contours
       double largest_area = 0, largest_contour_index = 0;
       if (contours.empty())
-      {
+      { 
+        ROS_INFO("NO Contours detected");
         int x_cord = -320 + center_ideal[0].x;
         int y_cord = 240 - center_ideal[0].y;
         if (x_cord < -270)
         {
-          array.data.push_back(-2);  // top
+          array.data.push_back(-2);  // left edge of the screen
           array.data.push_back(-2);
           array.data.push_back(-2);
           array.data.push_back(-2);
           pub.publish(array);
+	  ROS_INFO("Buoy was detected at left edge of the screen, last time");
         }
         else if (x_cord > 270)
         {
-          array.data.push_back(-1);  // left_side
+          array.data.push_back(-1);  // right edge of the screen
           array.data.push_back(-1);
           array.data.push_back(-1);
           array.data.push_back(-1);
           pub.publish(array);
+	  ROS_INFO("Buoy was detected at right edge of the screen, last time");
         }
         else if (y_cord > 200)
         {
-          array.data.push_back(-3);  // bottom
+          array.data.push_back(-3);  // top edge of the screen
           array.data.push_back(-3);
           array.data.push_back(-3);
           array.data.push_back(-3);
           pub.publish(array);
+ 	  ROS_INFO("Buoy was detected at top edge of the screen, last time");
         }
         else if (y_cord < -200)
         {
-          array.data.push_back(-4);  // right_side
+          array.data.push_back(-4);  // bottom edge of the screen
           array.data.push_back(-4);
           array.data.push_back(-4);
           array.data.push_back(-4);
           pub.publish(array);
+	  ROS_INFO("Buoy was detected at bottom edge of the screen, last time");
         }
         ros::spinOnce();
         continue;
@@ -290,56 +302,66 @@ int main(int argc, char *argv[])
       int net_y_cord = 240 - center_ideal[0].y + r[0];
       if (net_x_cord > 310)
       {
-        array.data.push_back(-2);  // right_side
+        array.data.push_back(-2);  // right edge of the frame
         array.data.push_back(-2);
         array.data.push_back(-2);
         array.data.push_back(-2);
         pub.publish(array);
+	ROS_INFO("Contour detected at right edge of the screen");
       }
       else if (net_x_cord < -310)
       {
-        array.data.push_back(-1);  // left_side
+        array.data.push_back(-1);  // left edge of the frame
         array.data.push_back(-1);
         array.data.push_back(-1);
         array.data.push_back(-1);
         pub.publish(array);
         ros::spinOnce();
+	ROS_INFO("Contour detected at left edge of the screen");
       }
       else if (net_y_cord > 230)
       {
-        array.data.push_back(-3);  // top
+        array.data.push_back(-3);  // top edge of the frame
         array.data.push_back(-3);
         array.data.push_back(-3);
         array.data.push_back(-3);
         pub.publish(array);
+	ROS_INFO("Contour detected at top edge of the screen");
       }
       else if (net_y_cord < -230)
       {
-        array.data.push_back(-4);  // bottom
+        array.data.push_back(-4);  // bottom edge of the frame
         array.data.push_back(-4);
         array.data.push_back(-4);
         array.data.push_back(-4);
         pub.publish(array);
+	ROS_INFO("Contour detected at bottom edge of the screen");
       }
       else if (r[0] > 110)
       {
-        array.data.push_back(-5);
+        array.data.push_back(-5); // too near of the buoy
         array.data.push_back(-5);
         array.data.push_back(-5);
         array.data.push_back(-5);
         pub.publish(array);
+	ROS_INFO("Contour detected too near to the screen");
       }
       else
       {
         float distance;
         distance = pow(radius[0] / 7526.5, -.92678);  // function found using experiment
         array.data.push_back(r[0]);                   // publish radius
-        array.data.push_back((320 - center_ideal[0].x));
-        array.data.push_back(-(240 - center_ideal[0].y));
+        array.data.push_back((-320 + center_ideal[0].x));
+        array.data.push_back((240 - center_ideal[0].y));
         array.data.push_back(distance);
         pub.publish(array);
+	ROS_INFO("Contour detected, Data published, Distance: %f, X_cord: %f, Y_cord: %f, Radius: %f", distance, center_ideal[0].x - 320, 240 - center_ideal[0].y, r[0]);
       }
-      cv::imshow("BuoyDetection:circle", circles);  // Original stream with detected ball overlay
+      // cv::imshow("BuoyDetection:circle", circles);  // Original stream with detected ball overlay
+	
+	sensor_msgs::ImagePtr msg1 = cv_bridge::CvImage(std_msgs::Header(), "bgr8", frame).toImageMsg();
+
+	pub1.publish(msg1);
 
       ros::spinOnce();
     }
@@ -347,6 +369,12 @@ int main(int argc, char *argv[])
     {
       ros::spinOnce();
     }
+
+    double end_loop_time = ros::Time::now().toSec();
+    double total_loop_time = end_loop_time - intial_loop_time;
+
+    std::cout << "Total Loop time: " << total_loop_time << std::endl;	
+
   }
   return 0;
 }
