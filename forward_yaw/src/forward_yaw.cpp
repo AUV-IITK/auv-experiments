@@ -88,7 +88,7 @@ void yawCb(std_msgs::Float64 msg)
         derivative = (presentAngularPosition - previousAngularPosition) / dt;
         output = (p * error) + (i * integral) + (d * derivative);
 
-        turningOutputPWMMapping(output);
+        turningOutputPWMMapping(7*output);
 
         if (error < band && error > -band)
         {
