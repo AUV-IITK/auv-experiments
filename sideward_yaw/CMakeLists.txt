@@ -14,7 +14,6 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
-  motion_commons
 )
 
 ## Check for lint errors
@@ -103,7 +102,7 @@ roslint_cpp()
 catkin_package(
   #  INCLUDE_DIRS include
   #  LIBRARIES motion_sideward
-  CATKIN_DEPENDS actionlib actionlib_msgs motion_commons
+  CATKIN_DEPENDS actionlib actionlib_msgs
   #  DEPENDS system_lib
 )
 
@@ -114,10 +113,10 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 # include_directories(include)
-##include_directories(
-##  ${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake
- ## ${catkin_INCLUDE_DIRS} 
-##)
+include_directories(
+ ${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake
+ ${catkin_INCLUDE_DIRS} 
+)
 
 add_executable(sideward_cmd src/sideward_cmd.cpp)
 target_link_libraries(sideward_cmd ${catkin_LIBRARIES})

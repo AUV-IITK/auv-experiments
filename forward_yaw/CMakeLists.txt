@@ -102,7 +102,7 @@ roslint_cpp()
 catkin_package(
   #  INCLUDE_DIRS include
   #  LIBRARIES motion_turn
- # CATKIN_DEPENDS actionlib actionlib_msgs motion_commons
+CATKIN_DEPENDS actionlib actionlib_msgs
   #  DEPENDS system_lib
 )
 
