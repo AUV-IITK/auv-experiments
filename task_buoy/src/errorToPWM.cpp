@@ -41,22 +41,27 @@ void ErrorDescriptor::errorToPWM(double _current_value) {
     this->previous_time_stamp_ = this->present_time_stamp_;
     this->present_time_stamp_ = ros::Time::now().toSec();
 
-    if (this->reference_value_ >= 180)
-        this->reference_value_ = this->reference_value_ - 360;
-    else if (this->reference_value_ <= -180)
-        this->reference_value_ = this->reference_value_ + 360;
+    if (this->name_ == "ANGLE") {
+        if (this->reference_value_ >= 180)
+            this->reference_value_ = this->reference_value_ - 360;
+        else if (this->reference_value_ <= -180)
+            this->reference_value_ = this->reference_value_ + 360;
+    }
 
     float derivative = 0, integral = 0;
     double dt = this->present_time_stamp_ - this->previous_time_stamp_;
 
     this->error_ = this->reference_value_ - _current_value;
-    if (this->error_ < 0)
-        this->error_value_ = this->error_ + 360;
-    else
-        this->error_value_ = this->error_ - 360;
 
-    if (abs(this->error_value_) < abs(this->error_))
-        this->error_ = this->error_value_;
+    if (this->name_ == "ANGLE") {
+        if (this->error_ < 0)
+            this->error_value_ = this->error_ + 360;
+        else
+            this->error_value_ = this->error_ - 360;
+
+        if (abs(this->error_value_) < abs(this->error_))
+            this->error_ = this->error_value_;
+    }
 
     std::cout << "ERROR: " << this->error_ << std::endl;
     integral += (this->error_ * dt);

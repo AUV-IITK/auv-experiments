@@ -57,7 +57,6 @@ int main(int argc, char **argv) {
     ros::Rate loop_rate(100);
 
     while(ros::ok()) {
-
         pwm_sideward_front.data = x_coord.getPWM() + angle.getPWM();
         pwm_sideward_back.data = x_coord.getPWM() - angle.getPWM();
 
