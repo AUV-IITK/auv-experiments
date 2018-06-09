@@ -34,4 +34,5 @@ class ErrorDescriptor {
     public: void errorToPWM(double _current_value);
     private: void turningOutputPWMMapping(float output);
     public: int getPWM();
+    public: double getCurrentValue();
 };

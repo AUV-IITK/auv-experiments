@@ -38,6 +38,8 @@ void ErrorDescriptor::errorToPWM(double _current_value) {
         this->seed_++;
     }
 
+    this->current_value_ = _current_value;
+
     this->previous_time_stamp_ = this->present_time_stamp_;
     this->present_time_stamp_ = ros::Time::now().toSec();
 
@@ -96,4 +98,8 @@ void ErrorDescriptor::turningOutputPWMMapping(float output) // to keep PWM value
 
 int ErrorDescriptor::getPWM() {
     return this->pwm_;
+}
+
+double ErrorDescriptor::getCurrentValue() {
+    return this->current_value_;
 }
