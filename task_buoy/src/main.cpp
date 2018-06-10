@@ -128,6 +128,7 @@ int main(int argc, char **argv) {
         frontUpwardPublisher.publish(pwm_upward_front);
         backUpwardPublisher.publish(pwm_upward_back);
 
+        std::cout << "----------------------------------" << std::endl;
         ROS_INFO("PWM forward_right : %d", pwm_forward_right.data);
         ROS_INFO("PWM forward_left : %d", pwm_forward_left.data);
         ROS_INFO("PWM sideward_front : %d", pwm_sideward_front.data);
