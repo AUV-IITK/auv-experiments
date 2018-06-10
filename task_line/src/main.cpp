@@ -20,11 +20,11 @@ void lineCenterDataCallback(const std_msgs::Float64MultiArrayPtr &_msg) {
     if (coord_count == 0) {
         coord_count++;
         y_coord.setReference(0);
-        x_coord.setReference(0);
+        // x_coord.setReference(0);
     }
 
     y_coord.errorToPWM(_msg->data[0]);
-    x_coord.errorToPWM(_msg->data[1]);
+    // x_coord.errorToPWM(_msg->data[1]);
 }
 
 void lineAngleDataCallback(const std_msgs::Float64Ptr &_msg) {
@@ -46,13 +46,13 @@ void depthDataCallback(const std_msgs::Float64Ptr &_msg) {
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "task_line");
-    
+
     ros::NodeHandle nh;
-    
+
     ros::Subscriber lineCenterDataListener = nh.subscribe("/varun/ip/line_centralize", 1000, &lineCenterDataCallback);
     ros::Subscriber lineAngleDataListener = nh.subscribe("/varun/ip/line_angle", 1000, &lineAngleDataCallback);
     ros::Subscriber depthDataListener = nh.subscribe("/varun/ip/depth", 1000, &depthDataCallback);
-    
+
     ros::Publisher frontSidewardPublisher = nh.advertise<std_msgs::Int32>("/pwm/sidewardFront", 1000);
     ros::Publisher backSidewardPublisher = nh.advertise<std_msgs::Int32>("/pwm/sidewardBack", 1000);
     ros::Publisher rightForwardPublisher = nh.advertise<std_msgs::Int32>("/pwm/forwardRight", 1000);
@@ -81,7 +81,7 @@ int main(int argc, char** argv) {
             pwm_forward_right.data = x_coord.getPWM();
         }
 
-        pwm_upward_back.data = z_coord.getPWM();
+        pwm_upward_front.data = z_coord.getPWM();
         pwm_upward_back.data = z_coord.getPWM();
 
         frontSidewardPublisher.publish(pwm_sideward_front);
@@ -91,7 +91,14 @@ int main(int argc, char** argv) {
         leftForwardPublisher.publish(pwm_forward_left);
 
         frontUpwardPublisher.publish(pwm_upward_front);
-        backUpwardPublisher.publish(pwm_upward_back); 
+        backUpwardPublisher.publish(pwm_upward_back);
+
+        ROS_INFO("PWM forward_right : %d", pwm_forward_right.data);
+        ROS_INFO("PWM forward_left : %d", pwm_forward_left.data);
+        ROS_INFO("PWM sideward_front : %d", pwm_sideward_front.data);
+        ROS_INFO("PWM sideward_back : %d", pwm_sideward_back.data);
+        ROS_INFO("PWM upward_front : %d", pwm_upward_front.data);
+        ROS_INFO("PWM upward_back : %d", pwm_upward_back.data);
 
         loop_rate.sleep();
         ros::spinOnce();

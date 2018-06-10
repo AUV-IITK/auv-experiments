@@ -45,7 +45,7 @@ void buoyDataCallback(const geometry_msgs::PointStampedPtr &_msg) {
         ROS_INFO("MOVING BACKWARD WITH CONSTANT PWM NOW!!!!");
     }
 
-    if (ros::Time::now().toSec() >= move_forward_start + move_forward_duration && count_buoy == 3) {
+    if (ros::Time::now().toSec() >= move_backward_start + move_forward_duration && count_buoy == 3) {
         move_backward_signal = false;
         x_coord.setReference(50);
         y_coord.setReference(0);
@@ -57,18 +57,18 @@ void buoyDataCallback(const geometry_msgs::PointStampedPtr &_msg) {
     if (move_forward_signal) {
         x_coord.errorToPWM(30);
         y_coord.errorToPWM(0);
-        z_coord.errorToPWM(0);        
+        z_coord.errorToPWM(0);
     }
     else if (move_backward_signal) {
         x_coord.errorToPWM(-30);
         y_coord.errorToPWM(0);
-        z_coord.errorToPWM(0);                
+        z_coord.errorToPWM(0);
     }
     else {
         // assuming point.y is for sideward position
         // point.x for distance
         // point.z for depth
-        x_coord.errorToPWM(_msg->point.x); 
+        x_coord.errorToPWM(_msg->point.x);
         y_coord.errorToPWM(_msg->point.y);
         z_coord.errorToPWM(_msg->point.z);
     }
@@ -77,6 +77,7 @@ void buoyDataCallback(const geometry_msgs::PointStampedPtr &_msg) {
 void imuDataCallback(const std_msgs::Float64Ptr &_msg) {
     if (count_imu == 0) {
         angle.setReference(_msg->data);
+        count_imu++;
     }
     angle.errorToPWM(_msg->data);
 }
@@ -86,7 +87,7 @@ int main(int argc, char **argv) {
     ros::NodeHandle nh;
     ros::Subscriber buoyDataListener = nh.subscribe("/threshold/center_coordinates", 1000, &buoyDataCallback);
     ros::Subscriber imuDataListener = nh.subscribe("/varun/sensors/imu/yaw", 1000, &imuDataCallback);
-    
+
     ros::Publisher frontSidewardPublisher = nh.advertise<std_msgs::Int32>("/pwm/sidewardFront", 1000);
     ros::Publisher backSidewardPublisher = nh.advertise<std_msgs::Int32>("/pwm/sidewardBack", 1000);
     ros::Publisher rightForwardPublisher = nh.advertise<std_msgs::Int32>("/pwm/forwardRight", 1000);
@@ -102,7 +103,8 @@ int main(int argc, char **argv) {
     std_msgs::Int32 pwm_upward_back;
 
     angle.setPID(2.4, 0, 0.5, 1);
-    y_coord.setPID(0, 0, -0.3, 15);
+    x_coord.setPID(0, 0, 0, 0);
+    y_coord.setPID(-1.6, 0, -0.3, 15);
     z_coord.setPID(0, 0, 0, 0);
 
     ros::Rate loop_rate(50);
@@ -114,7 +116,7 @@ int main(int argc, char **argv) {
         pwm_forward_left.data = x_coord.getPWM();
         pwm_forward_right.data = x_coord.getPWM();
 
-        pwm_upward_back.data = z_coord.getPWM();
+        pwm_upward_front.data = z_coord.getPWM();
         pwm_upward_back.data = z_coord.getPWM();
 
         frontSidewardPublisher.publish(pwm_sideward_front);
@@ -124,7 +126,14 @@ int main(int argc, char **argv) {
         leftForwardPublisher.publish(pwm_forward_left);
 
         frontUpwardPublisher.publish(pwm_upward_front);
-        backUpwardPublisher.publish(pwm_upward_back); 
+        backUpwardPublisher.publish(pwm_upward_back);
+
+        ROS_INFO("PWM forward_right : %d", pwm_forward_right.data);
+        ROS_INFO("PWM forward_left : %d", pwm_forward_left.data);
+        ROS_INFO("PWM sideward_front : %d", pwm_sideward_front.data);
+        ROS_INFO("PWM sideward_back : %d", pwm_sideward_back.data);
+        ROS_INFO("PWM upward_front : %d", pwm_upward_front.data);
+        ROS_INFO("PWM upward_back : %d", pwm_upward_back.data);
 
         loop_rate.sleep();
         ros::spinOnce();
