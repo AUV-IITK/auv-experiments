@@ -1,0 +1,13 @@
+## calibration details for approximate distance estimation of buoy
+focal_length: 10
+known_width: 1
+
+## thresholding paramters for buoy
+# lower threshold
+low_b:146
+low_g:90
+low_r:84
+# Upper threshold
+high_b: 210
+high_g: 211
+high_r: 215

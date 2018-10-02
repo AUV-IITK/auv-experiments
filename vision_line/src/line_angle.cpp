@@ -47,7 +47,7 @@ bool flag = false;
 bool video = false;
 int t1min, t1max, t2min, t2max, t3min, t3max, lineCount = 0;
 
-void callback_dyn(task_line::lineConfig &config, double level)
+void callback_dyn(vision_line::lineConfig &config, double level)
 {
   t1min = config.t1min_param;
   t1max = config.t1max_param;
@@ -147,7 +147,7 @@ void callback(int, void *)
     j++;
   }
 
-  imshow("LineAngle:LINES", imgLines + frame);
+  //imshow("LineAngle:LINES", imgLines + frame);
 
   // if num of lines are large than one or two stray lines won't affect the mean
   // much
@@ -241,13 +241,13 @@ int main(int argc, char *argv[])
   ros::Rate loop_rate(10);
 
   image_transport::ImageTransport it(n);
-  image_transport::Subscriber sub1 = it.subscribe("/varun/sensors/bottom_camera/image_raw", 1, imageCallback);
+  image_transport::Subscriber sub1 = it.subscribe("/bottom_camera/image_raw", 1, imageCallback);
   image_transport::Publisher pub1 = it.advertise("/first_picture", 1);
   image_transport::Publisher pub2 = it.advertise("/second_picture", 1);
   image_transport::Publisher pub3 = it.advertise("/third_picture", 1);
 
-  dynamic_reconfigure::Server<task_line::lineConfig> server;
-  dynamic_reconfigure::Server<task_line::lineConfig>::CallbackType f;
+  dynamic_reconfigure::Server<vision_line::lineConfig> server;
+  dynamic_reconfigure::Server<vision_line::lineConfig>::CallbackType f;
   f = boost::bind(&callback_dyn, _1, _2);
   server.setCallback(f);
 
@@ -278,24 +278,24 @@ int main(int argc, char *argv[])
     step = frame.step;
 
 
-    balance_white(frame);
+    //balance_white(frame);
     bilateralFilter(frame, dst1, 4, 8, 8);
 
     cv::Scalar hsv_min = cv::Scalar(t1min, t2min, t3min, 0);
     cv::Scalar hsv_max = cv::Scalar(t1max, t2max, t3max, 0);
 
-    cv::inRange(dst1, cv::Scalar(0, 0, 20), cv::Scalar(80, 260, 260), red_hue_image);
+    cv::inRange(dst1, hsv_min, hsv_max, red_hue_image);
 
-    cv::erode(red_hue_image, red_hue_image, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5)));
-    cv::erode(red_hue_image, red_hue_image, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(3, 3)));
-    cv::dilate(red_hue_image, red_hue_image, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5)));
-    cv::dilate(red_hue_image, red_hue_image, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5)));
-    cv::dilate(red_hue_image, red_hue_image, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5)));
-    cv::dilate(red_hue_image, red_hue_image, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5)));
+    //cv::erode(red_hue_image, red_hue_image, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5)));
+    //cv::erode(red_hue_image, red_hue_image, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(3, 3)));
+    cv::dilate(red_hue_image, red_hue_image, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(3, 3)));
+    cv::dilate(red_hue_image, red_hue_image, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(3, 3)));
+    cv::dilate(red_hue_image, red_hue_image, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(3, 3)));
+    //cv::dilate(red_hue_image, red_hue_image, getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5)));
 
-    cv::imshow("LineAngle:AfterThresholding", red_hue_image);  // The stream after color filtering
+    //cv::imshow("LineAngle:AfterThresholding", red_hue_image);  // The stream after color filtering
 
-    if (!IP)
+    if (1)
     {
       // find contours
       std::vector<std::vector<cv::Point> > contours;
@@ -303,8 +303,8 @@ int main(int argc, char *argv[])
       findContours(thresholded_Mat, contours, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE);  // Find the contours in the image
       double largest_area = 0, largest_contour_index = 0;
 
-      sensor_msgs::ImagePtr msg2 = cv_bridge::CvImage(std_msgs::Header(), "bgr8", balanced_image1).toImageMsg();
-      sensor_msgs::ImagePtr msg3 = cv_bridge::CvImage(std_msgs::Header(), "mono8", thresholded).toImageMsg();
+      sensor_msgs::ImagePtr msg2 = cv_bridge::CvImage(std_msgs::Header(), "bgr8", dst1).toImageMsg();
+      sensor_msgs::ImagePtr msg3 = cv_bridge::CvImage(std_msgs::Header(), "mono8", red_hue_image).toImageMsg();
 
       pub2.publish(msg2);
       pub3.publish(msg3);

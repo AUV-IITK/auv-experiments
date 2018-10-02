@@ -1,0 +1,14 @@
+<launch>
+
+  <node pkg="buoy_processing" type="buoy_processing" name="buoy_processing" output="screen">
+
+    <param name="buoy_processing/low_b" value="146"/>
+    <param name="buoy_processing/low_g" value="90"/>
+    <param name="buoy_processing/low_r" value="84"/>
+    <param name="buoy_processing/high_b" value="210"/>
+    <param name="buoy_processing/high_g" value="211"/>
+    <param name="buoy_processing/high_r" value="215"/>
+
+  </node>
+
+</launch>

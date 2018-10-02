@@ -32,7 +32,7 @@ void buoyDataCallback(const geometry_msgs::PointStampedPtr &_msg) {
         // z_coord.setReference(0);
         count_buoy++;
     }
-    if (_msg->point.x <= 60 && count_buoy == 1) {
+    if (_msg->point.x <= 30 && count_buoy == 1) {
         move_forward_signal = true;
         move_forward_start = ros::Time::now().toSec();
         count_buoy++;
@@ -91,7 +91,7 @@ void imuDataCallback(const std_msgs::Float64Ptr &_msg) {
 int main(int argc, char **argv) {
     ros::init(argc, argv, "task_buoy");
     ros::NodeHandle nh;
-    ros::Subscriber buoyDataListener = nh.subscribe("/threshold/center_coordinates", 1000, &buoyDataCallback);
+    ros::Subscriber buoyDataListener = nh.subscribe("/buoy_task/buoy_coordinates", 1000, &buoyDataCallback);
     ros::Subscriber imuDataListener = nh.subscribe("/varun/sensors/imu/yaw", 1000, &imuDataCallback);
 
     ros::Publisher frontSidewardPublisher = nh.advertise<std_msgs::Int32>("/pwm/sidewardFront", 1000);
@@ -113,7 +113,7 @@ int main(int argc, char **argv) {
     y_coord.setPID(-1.6, 0, -0.3, 15);
     z_coord.setPID(0, 0, 0, 0);
 
-    move_forward_duration = 6;
+    move_forward_duration = 2;
     move_backward_duration = 10;
 
     ros::Rate loop_rate(50);
@@ -123,8 +123,8 @@ int main(int argc, char **argv) {
         pwm_sideward_back.data = y_coord.getPWM() - angle.getPWM();
 
         if (move_forward_signal) {
-            pwm_forward_left.data = 150;
-            pwm_forward_right.data = 150;
+            pwm_forward_left.data = 100;
+            pwm_forward_right.data = 100;
         }
         else if (move_backward_signal) {
             pwm_forward_left.data = -150;
@@ -135,8 +135,8 @@ int main(int argc, char **argv) {
             pwm_forward_right.data = 0;
         }
         else {
-            pwm_forward_left.data = 125;
-            pwm_forward_right.data = 125;
+            pwm_forward_left.data = 150;
+            pwm_forward_right.data = 150;
         }
 
         pwm_upward_front.data = z_coord.getPWM();

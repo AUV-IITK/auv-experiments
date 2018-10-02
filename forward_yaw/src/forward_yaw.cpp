@@ -20,8 +20,8 @@ ros::Publisher PWM_turn;
 
 // ros::Publisher
 float p = 2.4;
-float i = 0.5;
-float d = 0.35;
+float i = 0.0;
+float d = 0.5;
 float band = 1.0;
 
 double previoustime, presenttime;
@@ -72,7 +72,7 @@ void yawCb(std_msgs::Float64 msg)
             fixedAngularPosition = fixedAngularPosition + 360;
 
         float derivative = 0, integral = 0;
-        double dt = presenttime - previoustime;
+        double dt = 0.02;
 
         error = fixedAngularPosition - presentAngularPosition;
         if (error < 0)
@@ -88,7 +88,7 @@ void yawCb(std_msgs::Float64 msg)
         derivative = (presentAngularPosition - previousAngularPosition) / dt;
         output = (p * error) + (i * integral) + (d * derivative);
 
-        turningOutputPWMMapping(7*output);
+        turningOutputPWMMapping(5*output);
 
         if (error < band && error > -band)
         {
@@ -96,13 +96,14 @@ void yawCb(std_msgs::Float64 msg)
             pwm_turn.data = 0;
         }
 
-        double final_loop_time = ros::Time::now().toNSec();
+        // double final_loop_time = ros::Time::now().toNSec();
 
-        double total_loop_time = final_loop_time - initial_loop_time;
+        // double total_loop_time = final_loop_time - initial_loop_time;
 
-        std::cout << "Total loop time: " << total_loop_time << std::endl;
+        // std::cout << "Total loop time: " << total_loop_time << std::endl;
 
         PWM_turn.publish(pwm_turn);
+        std::cout << pwm_turn.data << std::endl;
     }
 }
 
@@ -111,9 +112,9 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "forward_yaw");
   ros::NodeHandle nh_;
 
-  std::cout << "Forward_Yaw initiated, p: " << " " << "i: " << " " << "d: " <<std::endl;
+  std::cout << "Forward_Yaw initiated, p: " << p << " " << "i: " << i << " " << "d: " << d <<std::endl;
   
-  ros::Subscriber yaw = nh_.subscribe<std_msgs::Float64>("/varun/motion/yaw", 1000, &yawCb);
+  ros::Subscriber yaw = nh_.subscribe<std_msgs::Float64>("/varun/sensors/imu/yaw", 1000, &yawCb);
   PWM_turn = nh_.advertise<std_msgs::Int32>("/pwm/turn", 400);
 
   ros::spin();

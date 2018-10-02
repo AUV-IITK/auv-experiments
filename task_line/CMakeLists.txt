@@ -119,12 +119,12 @@ catkin_package(
 include_directories(
 # include
   ${catkin_INCLUDE_DIRS}
-  ../task_buoy/include/
+  include/
 )
 
 ## Declare a C++ library
-# add_library(errorToPWM SHARED src/errorToPWM.cpp include/errorToPWM.h)
-# target_link_libraries(errorToPWM ${catkin_LIBRARIES})
+add_library(errorToPWMLine SHARED src/errorToPWM.cpp include/errorToPWM.h)
+target_link_libraries(errorToPWMLine ${catkin_LIBRARIES})
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -134,8 +134,9 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
+
 add_executable(task_line src/main.cpp)
-target_link_libraries(task_line errorToPWM ${catkin_LIBRARIES})
+target_link_libraries(task_line errorToPWMLine ${catkin_LIBRARIES})
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the

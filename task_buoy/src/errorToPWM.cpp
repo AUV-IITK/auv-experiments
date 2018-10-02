@@ -88,7 +88,7 @@ void ErrorDescriptor::errorToPWM(double _current_value) {
     if(this->name_ == "ANGLE")
         turningOutputPWMMapping(7*output);
     else
-        turningOutputPWMMapping(2*output);
+        turningOutputPWMMapping(output);
 
     if (this->error_ < this->band_ && this->error_ > -this->band_)
     {
@@ -101,6 +101,7 @@ void ErrorDescriptor::errorToPWM(double _current_value) {
 
 void ErrorDescriptor::turningOutputPWMMapping(float output) // to keep PWM values within a limit
 {
+    //std::cout << "pwm mapping" << std::endl;
     float maxOutput = 1000, minOutput = -maxOutput;
     float scale = 255 / maxOutput;
     if (output > maxOutput)
@@ -114,6 +115,8 @@ void ErrorDescriptor::turningOutputPWMMapping(float output) // to keep PWM value
     if (output_pwm < -255)
         output_pwm = -255;
     this->pwm_ = output_pwm;
+
+    std::cout << "pwm mapping: " << this->pwm_ << std::endl;
 }
 
 int ErrorDescriptor::getPWM() {
